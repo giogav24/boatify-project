@@ -9,7 +9,9 @@ const sendConfirmationEmail = require('./email');
 exports.getUtenti = async (req, res) => {
     try {
         // query nel database per prendere tutti gli utenti (e popolare il campo 'barca' dalla tabella 'barca') 
-        const utenti = await Utente.find().populate('barca', 'targa')
+        const utenti = await Utente.find()
+            .populate('barca', 'targa')
+            
 
         res.status(200).json({ success: true, utenti: utenti })
 
@@ -18,7 +20,7 @@ exports.getUtenti = async (req, res) => {
     }
 }
 
-exports.registerUser = async (req, res) => {
+exports.registrazioneUtente = async (req, res) => {
   const { nome, cognome, nr_telefono, email, password, ruolo } = req.body;
 
   if (!nome || !cognome || !nr_telefono || !email || !password || !ruolo) {
@@ -50,26 +52,29 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-exports.loginUser = async (req, res) => {
+exports.loginUtente = async (req, res) => {
   const { email, password } = req.body;
 
+// controllo su campi mancanti
   if (!email || !password) {
     return res.status(400).json({ success: false, message: 'Compilare tutti i campi' });
   }
 
   try {
+    // recupero utente dal database
     const user = await User.findOne({ email });
 
+    //se non esiste ritorno errore
     if (!user) {
       return res.status(404).json({ success: false, message: 'Utente inesistente' });
     }
-
+    //controllo la password
     const passwordCorrect = await bcrypt.compare(password, user.password);
 
     if (!passwordCorrect) {
       return res.status(401).json({ success: false, message: 'Password incorretta' });
     }
-
+    //se tutto va bene creo il tocken aggiungendo i vari campi
     const token = jwt.sign(
       {
         id: user._id,
@@ -83,18 +88,14 @@ exports.loginUser = async (req, res) => {
       }
     );
 
-    res.status(200).json({
-      success: true,
-      token,
-      nome: user.nome,
-      email: user.email,
-      ruolo: user.ruolo,
-    });
+    res.status(200).json({success: true,token: token});
+
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 };
 
+//resettare la password se si è dimenticata
 exports.resetPasswordRequest = async (req, res) => {
   const { email } = req.body;
 
@@ -112,7 +113,8 @@ exports.resetPasswordRequest = async (req, res) => {
     const resetToken = crypto.randomBytes(20).toString('hex');
 
     user.tokenRecuperoPassword = crypto.createHash('sha256').update(resetToken).digest('hex');
-    user.scadenzaRecuperoPassword = Date.now() + 10 * 60 * 1000;
+    //imposto tempo massimo per eseguire il reset
+    user.scadenzaRecuperoPassword = Date.now() + 10 * 60 * 1000; //10 minuti
 
     await user.save();
 
@@ -123,16 +125,22 @@ exports.resetPasswordRequest = async (req, res) => {
       <p>Per favore, vai a questo link per reimpostare la tua password:</p>
       <a href=${resetURL} clicktracking=off>${resetURL}`;
 
-    // Invia l'email utilizzando la tua funzione di invio email
-    // Assumendo che tu abbia una funzione di invio email
+    // Invia l'email utilizzando la funzione di invio email
     sendConfirmationEmail(user.email, 'Reset Password', message);
 
     res.status(200).json({ success: true, message: 'Email inviata correttamente' });
   } catch (err) {
+    //se ci sono stati problemi nell'invio della mail resetto i campi del db poichè l'operazione è fallita
+    user.tokenRecuperoPassword = undefined
+    user.scadenzaRecuperoPassword = undefined
+
+    await user.save()
+
     res.status(500).json({ success: false, message: err.message });
   }
 };
 
+//per cambiare la mail conoscendo quella vecchia
 exports.changePassword = async (req, res) => {
   const { email, oldPassword, newPassword } = req.body;
 
@@ -147,6 +155,7 @@ exports.changePassword = async (req, res) => {
       res.status(404).json({ success: false, message: 'Utente non trovato' });
     }
 
+    //controllo che la vecchia password inserita sia uguale a quella registrata nel db
     const passwordCorrect = await bcrypt.compare(oldPassword, user.password);
 
     if (!passwordCorrect) {
@@ -162,4 +171,6 @@ exports.changePassword = async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
-};
+}
+
+
