@@ -8,7 +8,7 @@ const app = express()
 const db_connection = require('./dbconnection')
 db_connection.connect()
 
-const authRouter = require('./routes/autenticazione')
+const authRoute = require('./routes/autenticazione')
 
 // middleware utili
 app.use(express.json())
@@ -22,7 +22,8 @@ app.use((req, res, next)=>{
 });
 
 // gestione delle routes
-app.use(`/api/${config.API_VERSION}/auth`, authRouter)
+//app.use(`/api/${config.API_VERSION}/auth`, authRouter)
+app.use("/auth", authRoute);
 
 
 app.use('/*', (req, res) => res.status(404).json({ success: false, message: 'Route inesistente' }))

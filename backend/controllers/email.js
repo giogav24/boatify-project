@@ -1,11 +1,19 @@
 const nodemailer= require('nodemailer');
 const config= require('../config');
 
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: config.EMAIL_USERNAME,
+    pass: config.EMAIL_PASSWORD,
+  },
+});
+
 const sendEmail = async (options) => {
   try {
     // Creazione del trasportatore di nodemailer
     const transporter = nodemailer.createTransport({
-      service: config.EMAIL_SERVICE,
+      service: "gmail",
       auth: {
         user: config.EMAIL_USERNAME,
         pass: config.EMAIL_PASSWORD,

@@ -4,42 +4,44 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const config = require('../config');
 const sendConfirmationEmail = require('./email');
-//const Barca = require('../models/Barca')
 
-exports.getUtenti = async (req, res) => {
-    try {
-        // query nel database per prendere tutti gli utenti (e popolare il campo 'barca' dalla tabella 'barca') 
-        const utenti = await Utente.find()
-            .populate('barca', 'targa')
-            
+exports.registraUtente = async (req, res) => {
+  const { nome, cognome, nr_telefono, data_nascita, email, password, ruolo } = req.body;
 
-        res.status(200).json({ success: true, utenti: utenti })
-
-    } catch (err) {
-        res.status(500).json({ success: false, error: err.message })
-    }
-}
-
-exports.registrazioneUtente = async (req, res) => {
-  const { nome, cognome, nr_telefono, email, password, ruolo } = req.body;
-
-  if (!nome || !cognome || !nr_telefono || !email || !password || !ruolo) {
+  if (!nome || !cognome || !nr_telefono || !data_nascita || !email || !password || !ruolo) {
     return res.status(400).json({ success: false, message: 'Compilare tutti i campi!' });
   }
 
   try {
-    const existingUser = await User.findOne({ email });
+    const existingUser = await Utente.findOne({ email });
 
     if (existingUser) {
       return res.status(409).json({ success: false, message: 'Utente già registrato' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    //controllo la validità della data 
+    const dataNascita = new Date(data_nascita);
+    const dataOdierna = new Date();
+    
+    if (isNaN(dataNascita.getTime()) || dataNascita >= dataOdierna) {
+      return res.status(400).json({ success: false, message: 'Data di nascita non valida' });
+    }
+    //impongo età > 14
+    const fourteenYearsAgo = new Date();
+    fourteenYearsAgo.setFullYear(dataOdierna.getFullYear() - 14);
+    
+    // Confronta le date
+    if (dataNascita > fourteenYearsAgo) {
+      return res.status(400).json({ success: false, message: 'L\'utente deve avere almeno 14 anni' });
+    }
 
-    const newUser = new User({
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    const newUser = new Utente({
       nome,
       cognome,
       nr_telefono,
+      data_nascita,
       email,
       password: hashedPassword,
       ruolo,
@@ -62,14 +64,19 @@ exports.loginUtente = async (req, res) => {
 
   try {
     // recupero utente dal database
-    const user = await User.findOne({ email });
+    const user = await Utente.findOne({ email });
 
     //se non esiste ritorno errore
     if (!user) {
       return res.status(404).json({ success: false, message: 'Utente inesistente' });
     }
+    console.log('Provided Password:', password);
+
+
     //controllo la password
-    const passwordCorrect = await bcrypt.compare(password, user.password);
+    const passwordCorrect = await bcrypt.compare(password.trim(), user.password);
+    console.log('Hashed Password in Database:', user.password);
+    console.log('Password Comparison Result:', passwordCorrect);
 
     if (!passwordCorrect) {
       return res.status(401).json({ success: false, message: 'Password incorretta' });
@@ -96,7 +103,7 @@ exports.loginUtente = async (req, res) => {
 };
 
 //resettare la password se si è dimenticata
-exports.resetPasswordRequest = async (req, res) => {
+exports.resetPassword = async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
@@ -104,7 +111,7 @@ exports.resetPasswordRequest = async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email });
+    const user = await Utente.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'Impossibile trovare l\'email' });
@@ -141,7 +148,7 @@ exports.resetPasswordRequest = async (req, res) => {
 };
 
 //per cambiare la mail conoscendo quella vecchia
-exports.changePassword = async (req, res) => {
+exports.cambiaPassword = async (req, res) => {
   const { email, oldPassword, newPassword } = req.body;
 
   if (!email || !oldPassword || !newPassword) {
@@ -149,7 +156,7 @@ exports.changePassword = async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email });
+    const user = await Utente.findOne({ email });
 
     if (!user) {
       res.status(404).json({ success: false, message: 'Utente non trovato' });
@@ -173,4 +180,28 @@ exports.changePassword = async (req, res) => {
   }
 }
 
+exports.getDatiUtente = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await Utente.findOne({email});
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Utente non trovato' });
+    }
+
+    // Estraggo i dati richiesti
+    const datiUtente = {
+      nome: user.nome,
+      cognome: user.cognome,
+      email: user.email,
+      numero_di_telefono: user.nr_telefono,
+      patenti: user.patenti,
+    };
+
+    res.status(200).json({ success: true, datiUtente });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 

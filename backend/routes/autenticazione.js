@@ -6,14 +6,14 @@ const controllerUtenti = require('../controllers/controllerUtente')
 const checkAuth = require('../middleware/check-auth')
 
 
-router.get('/utenti', controllerUtenti.getUtenti)
+router.get('/getDatiUtente', controllerUtenti.getDatiUtente);
 
-router.post('/new/cliente', controllerUtenti.registrazioneUtente)
+router.post('/registraUtente', controllerUtenti.registraUtente);
 
-router.post('/login', controllerUtenti.loginUtente)
+router.post('/loginUtente', controllerUtenti.loginUtente);
 
-router.post('/passworddimenticata', controllerUtenti.resetPasswordRequest)
+router.post('/resetPassword', controllerUtenti.resetPassword);
 
-router.put('/cambiopassword', checkAuth, controllerUtenti.changePassword)
+router.post('/cambiaPassword', controllerUtenti.cambiaPassword);
 
 module.exports = router
