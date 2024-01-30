@@ -1,9 +1,7 @@
-//Modelli Mongoose per MongoDB. Modello utente.
-
+//Modelli Mongoose per MongoDB. Modello barca.
 var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
 
-const schemaBarca = new Schema({
+const schemaBarca = new mongoose.Schema({
     proprietario: {
         type: Schema.Types.ObjectId,
         ref: 'Utente',

@@ -1,5 +1,4 @@
 var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
 
 const schemaPatente = new mongoose.Schema({
     tipo_patente: {
