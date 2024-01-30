@@ -8,7 +8,7 @@ module.exports = {
     FRONT_PORT: process.env.FRONT_PORT || 8080,
     HOST: process.env.HOST || "localhost",
 
-    DB_URL_LOCAL: process.env.DB_URL_LOCAL || 'mongodb://localhost',
+    DB_URL_LOCAL: process.env.DB_URL_LOCAL || 'mongodb://localhost:27017mongodb+srv://giorgiagavioli:lb8uJNYeqWu9BhZz@boatifydb.wx52bbd.mongodb.net/?retryWrites=true&w=majority',
     DB_URL_CLUSTER_TESTING: process.env.DB_URL_CLUSTER_TESTING,
     DB_URL_CLUSTER: process.env.DB_URL_CLUSTER,
 
