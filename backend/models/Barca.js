@@ -26,7 +26,8 @@ const schemaBarca = new Schema({
     },
     patente: {
         type: String,
-        enum : ['A motore', 'A motore e vela', 'B motore', 'B motore e vela', 'C motore', 'C motore e vela']
+        //enum : ['A motore', 'A motore e vela', 'B motore', 'B motore e vela', 'C motore', 'C motore e vela']
+        ref: 'Patente'
     },
     verificaDisponibile: {
         type: Boolean,
@@ -42,7 +43,7 @@ const schemaBarca = new Schema({
     },
     prenotazioni: {
         type: Schema.Types.ObjectId,
-        ref: 'bookings' 
+        ref: 'Prenotazione' 
     }
 
 })

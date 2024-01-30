@@ -43,7 +43,7 @@ const schemaUtente = new Schema({
     },
     prenotazioni: {
         type: [mongoose.Types.ObjectId],
-        ref: 'Evento'
+        ref: 'Prenotazione'
     },
     verifiedEmail: {
         type: Boolean,
