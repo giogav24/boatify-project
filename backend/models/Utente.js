@@ -6,12 +6,12 @@ const bcrypt = require('bcrypt')
 const schemaUtente = new mongoose.Schema({
     ruolo: {
         type: String,
-        enum: ['Noleggiatore', 'Proprietario'],
+        enum: ['Noleggiatore', 'Proprietario'], 
         required: true
     },
     nome: {
         type: String,
-        required: true
+        //required: true
     },
     cognome: {
         type: String,
@@ -40,6 +40,10 @@ const schemaUtente = new mongoose.Schema({
     barca: {
         type: mongoose.Types.ObjectId,
         ref: 'Barca'
+    },
+    patenti: {
+        type: mongoose.Types.ObjectId,
+        ref: 'Patenti'
     },
     prenotazioni: {
         type: [mongoose.Types.ObjectId],

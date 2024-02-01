@@ -8,7 +8,7 @@ module.exports = {
     FRONT_PORT: process.env.FRONT_PORT || 8080,
     HOST: process.env.HOST || "localhost",
 
-    DB_URL: process.env.DB_URL || 'mongodb://localhost:27017mongodb+srv://giorgiagavioli:6Q9YwXZDx0Mz3gjO@boatifydb.wx52bbd.mongodb.net/?retryWrites=true&w=majority',
+    DB_URL: process.env.DB_URL || 'mongodb://localhost',
 
     SECRET_KEY: process.env.SECRET_KEY || "lu3028kb855gnzddr7vjlo0xgpkj2s4f",
 
