@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt')
 const schemaUtente = new mongoose.Schema({
     ruolo: {
         type: String,
-        enum: ['Noleggiatore', 'Proprietario'], //vedi diagrammi classi domanda prof
+        enum: ['Noleggiatore', 'Proprietario'],
         required: true
     },
     nome: {
