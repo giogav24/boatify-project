@@ -87,7 +87,7 @@ exports.loginUtente = async (req, res) => {
     if (!passwordCorrect) {
       return res.status(401).json({ success: false, message: 'Password incorretta' });
     }
-    //se tutto va bene creo il tocken aggiungendo i vari campi
+    //se tutto va bene creo il token aggiungendo i vari campi
     const token = jwt.sign(
       {
         id: user._id,
@@ -215,18 +215,51 @@ exports.getDatiUtente = async (req, res) => {
 };
 
 
-exports.logoutUtente = (req, res) => {
+exports.logoutUtente = async (req, res) => {
   try {
-    // Esempio di rimozione di un token JWT memorizzato nel client (localStorage)
-    localStorage.removeItem('token');
+    const { email } = req.body;
 
-    // Risposta JSON indicante successo del logout
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email mancante nella richiesta' });
+    }
+
+    const utente = await Utente.findOne({ email });
+
+    if (!utente) {
+      return res.status(404).json({ success: false, message: 'Utente non trovato' });
+    }
+
+    //localStorage.removeItem('token');
+
     res.status(200).json({ success: true, message: 'Logout effettuato con successo' });
   } catch (error) {
-    // Gestisci eventuali errori
     console.error('Errore durante il logout:', error);
     res.status(500).json({ success: false, error: 'Errore durante il logout' });
   }
 };
+
+// Funzione per l'eliminazione del profilo utente
+exports.eliminaProfilo = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email mancante nella richiesta' });
+    }
+    const utente = await Utente.deleteMany({ email });
+    if (!utente) {
+      return res.status(404).json({ success: false, message: 'Utente non trovato' });
+    }
+
+    //localStorage.removeItem('token');
+
+    res.status(200).json({ success: true, message: 'Profilo eliminato con successo' });
+  } catch (error) {
+    console.error('Errore durante l\'eliminazione del profilo:', error);
+    res.status(500).json({ success: false, error: 'Errore durante l\'eliminazione del profilo' });
+  }
+};
+
+
 
 

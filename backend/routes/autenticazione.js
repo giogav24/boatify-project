@@ -3,7 +3,7 @@ const router = express.Router()
 
 const controllerUtenti = require('../controllers/controllerUtente')
 
-const checkAuth = require('../middleware/check-auth')
+const checkAuth = require('../middleware/check-auth.js')
 
 
 router.get('/getDatiUtente', controllerUtenti.getDatiUtente);
@@ -16,8 +16,9 @@ router.post('/resetPassword', controllerUtenti.resetPassword);
 
 router.post('/cambiaPassword', controllerUtenti.cambiaPassword);
 
-router.post('/logoutUtente', checkAuth, controllerUtenti.logoutUtente);
+router.post('/logoutUtente',  checkAuth, controllerUtenti.logoutUtente);
 
+router.delete('/eliminaProfilo', checkAuth, controllerUtenti.eliminaProfilo);
 
 
 module.exports = router
