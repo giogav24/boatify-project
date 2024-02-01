@@ -7,7 +7,7 @@ const app = express()
 
 // chiamata alla funzione per la connessione con il database
 const db_connection = require('./dbconnection')
-const db = require('./models/Utente.js')
+const db = require('./models')
 db_connection.connect()
 
 const authRouter = require('./routes/autenticazione')
@@ -36,7 +36,7 @@ if (config.NODE_ENV === 'production') {
 
 if(config.NODE_ENV !== "testing"){
   app.listen(config.PORT, () => {
-    console.log(`Boatify-API listening on ${config.PORT}`)
+    console.log(`Boatify server listening on ${config.PORT}`)
   })
 }
 

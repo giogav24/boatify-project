@@ -1,9 +1,9 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
-var Schema = mongoose.Schema;
+
 
 // set up my mongoose model
-const schemaUtente = new Schema({
+const schemaUtente = new mongoose.Schema({
     ruolo: {
         type: String,
         enum: ['Noleggiatore', 'Proprietario'], //vedi diagrammi classi domanda prof
@@ -43,7 +43,7 @@ const schemaUtente = new Schema({
     },
     prenotazioni: {
         type: [mongoose.Types.ObjectId],
-        ref: 'Evento'
+        ref: 'Prenotazione'
     },
     verifiedEmail: {
         type: Boolean,
