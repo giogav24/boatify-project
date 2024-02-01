@@ -1,41 +1,28 @@
 const nodemailer= require('nodemailer');
 const config= require('../config');
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: config.EMAIL_USERNAME,
-    pass: config.EMAIL_PASSWORD,
-  },
-});
+
 
 const sendEmail = async (options) => {
-  try {
-    // Creazione del trasportatore di nodemailer
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
+  const transporter = nodemailer.createTransport({
+      // informazioni che riguardano l'invio della mail
+      service: config.EMAIL_SERVICE,
       auth: {
-        user: config.EMAIL_USERNAME,
-        pass: config.EMAIL_PASSWORD,
-      },
-    });
+          user: config.EMAIL_USERNAME,
+          pass: config.EMAIL_PASSWORD
+      }
+  })
 
-    // Informazioni del destinatario della mail
-    const mailOptions = {
+  // informazioni del ricevente della mail
+  const mailOptions = {
       from: config.EMAIL_FROM,
       to: options.to,
       subject: options.subject,
-      html: options.html, 
-    };
-
-    // Invio dell'email
-    await transporter.sendMail(mailOptions);
-    console.log('Email inviata con successo');
-    
-  } catch (error) {
-    console.error('Errore durante l\'invio dell\'email:', error.message);
-    throw new Error('Errore durante l\'invio dell\'email');
+      html: options.text
   }
-};
+  
+  await transporter.sendMail(mailOptions)
+}
 
-module.exports = sendEmail;
+
+module.exports = sendEmail

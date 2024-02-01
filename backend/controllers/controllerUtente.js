@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const config = require('../config');
+const localStorage = require('localStorage'); 
 const sendConfirmationEmail = require('./email');
 
 exports.registraUtente = async (req, res) => {
@@ -74,9 +75,14 @@ exports.loginUtente = async (req, res) => {
 
 
     //controllo la password
-    const passwordCorrect = await bcrypt.compare(password.trim(), user.password);
+    const passwordCorrect = await bcrypt.compare(password, user.password);
+    console.log('Hashed Password in Database:',password);
     console.log('Hashed Password in Database:', user.password);
     console.log('Password Comparison Result:', passwordCorrect);
+
+    console.log("Provided Password Type:", typeof password);
+    console.log("Hashed Password Type:", typeof user.password);
+
 
     if (!passwordCorrect) {
       return res.status(401).json({ success: false, message: 'Password incorretta' });
@@ -107,21 +113,20 @@ exports.resetPassword = async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
-    return res.status(400).json({ success: false, message: 'Email non fornita' });
+    return res.status(400).json({ success: false, message: "Email non fornita" });
   }
 
   try {
-    const user = await Utente.findOne({ email });
+    const user = await Utente.findOne({ email: email });
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'Impossibile trovare l\'email' });
+      return res.status(404).json({ success: false, message: "Impossibile trovare l'email" });
     }
 
     const resetToken = crypto.randomBytes(20).toString('hex');
 
     user.tokenRecuperoPassword = crypto.createHash('sha256').update(resetToken).digest('hex');
-    //imposto tempo massimo per eseguire il reset
-    user.scadenzaRecuperoPassword = Date.now() + 10 * 60 * 1000; //10 minuti
+    user.scadenzaRecuperoPassword = Date.now() + 10 * 60 * 1000;
 
     await user.save();
 
@@ -132,17 +137,21 @@ exports.resetPassword = async (req, res) => {
       <p>Per favore, vai a questo link per reimpostare la tua password:</p>
       <a href=${resetURL} clicktracking=off>${resetURL}`;
 
-    // Invia l'email utilizzando la funzione di invio email
-    sendConfirmationEmail(user.email, 'Reset Password', message);
+    try {
+      await sendConfirmationEmail({
+        to: user.email,
+        subject: 'Richiesta di ripristino password',
+        text: message,
+      });
 
-    res.status(200).json({ success: true, message: 'Email inviata correttamente' });
+      res.status(200).json({ success: true, message: 'Email inviata correttamente' });
+    } catch (err) {
+      user.tokenRecuperoPassword = undefined;
+      user.scadenzaRecuperoPassword = undefined;
+      await user.save();
+      res.status(500).json({ success: false, message: err.message });
+    }
   } catch (err) {
-    //se ci sono stati problemi nell'invio della mail resetto i campi del db poichè l'operazione è fallita
-    user.tokenRecuperoPassword = undefined
-    user.scadenzaRecuperoPassword = undefined
-
-    await user.save()
-
     res.status(500).json({ success: false, message: err.message });
   }
 };
@@ -204,4 +213,20 @@ exports.getDatiUtente = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+
+exports.logoutUtente = (req, res) => {
+  try {
+    // Esempio di rimozione di un token JWT memorizzato nel client (localStorage)
+    localStorage.removeItem('token');
+
+    // Risposta JSON indicante successo del logout
+    res.status(200).json({ success: true, message: 'Logout effettuato con successo' });
+  } catch (error) {
+    // Gestisci eventuali errori
+    console.error('Errore durante il logout:', error);
+    res.status(500).json({ success: false, error: 'Errore durante il logout' });
+  }
+};
+
 

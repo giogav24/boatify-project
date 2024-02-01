@@ -18,7 +18,7 @@ app.use(cors())
 
 app.use(async(req, res, next)=>{
   //await db_connection.connect(); 
-  res.setheader("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", "*");
   req.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
