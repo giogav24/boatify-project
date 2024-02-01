@@ -41,5 +41,3 @@ if(config.NODE_ENV !== "testing"){
 }
 
 module.exports = app
-
-
