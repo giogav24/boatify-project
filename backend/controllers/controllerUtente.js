@@ -1,4 +1,5 @@
 const Utente = require('../models/Utente')
+const Patente = require('../models/Patente')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
@@ -194,9 +195,13 @@ exports.getDatiUtente = async (req, res) => {
       nome: user.nome,
       cognome: user.cognome,
       email: user.email,
-      numero_di_telefono: user.nr_telefono,
-      patenti: user.patenti,
+      numero_di_telefono: user.nr_telefono
     };
+    const patenti = await Patente.find({ noleggiatore: user._id });
+
+    // Aggiungo le patenti all'oggetto datiUtente
+    datiUtente.patenti = patenti;
+
 
     res.status(200).json({ success: true, datiUtente });
   } catch (err) {

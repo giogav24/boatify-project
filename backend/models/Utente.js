@@ -43,7 +43,7 @@ const schemaUtente = new mongoose.Schema({
     },
     patenti: {
         type: mongoose.Types.ObjectId,
-        ref: 'Patenti'
+        ref: 'Patente'
     },
     prenotazioni: {
         type: [mongoose.Types.ObjectId],

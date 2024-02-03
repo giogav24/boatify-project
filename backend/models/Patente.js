@@ -6,7 +6,7 @@ const schemaPatente = new mongoose.Schema({
         enum : ['A motore', 'A motore e vela', 'B motore', 'B motore e vela', 'C motore', 'C motore e vela']
     },
     noleggiatore: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Types.ObjectId,
         ref: 'Utente',
         validate: {
             validator: async function (userId) {
@@ -28,12 +28,7 @@ const schemaPatente = new mongoose.Schema({
     data_scadenza: {
         type: String,
         required: true
-    },
-    verificaScadenza: {
-        type: Boolean,
-        default: false
     }
-
 })
 
 schemaPatente.pre('save', async function (next) {
