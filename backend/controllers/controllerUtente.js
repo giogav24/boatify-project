@@ -14,7 +14,7 @@ exports.registraUtente = async (req, res) => {
   }
 
   try {
-    const existingUser = await Utente.findOne({ email });
+    const existingUser = await Utente.findOne({ email: email });
 
     if (existingUser) {
       return res.status(409).json({ success: false, message: 'Utente già registrato' });
@@ -35,20 +35,19 @@ exports.registraUtente = async (req, res) => {
     if (dataNascita > fourteenYearsAgo) {
       return res.status(400).json({ success: false, message: 'L\'utente deve avere almeno 14 anni' });
     }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
     
     const newUser = new Utente({
-      nome,
-      cognome,
-      nr_telefono,
-      data_nascita,
-      email,
-      password: hashedPassword,
-      ruolo,
+      nome: nome,
+      cognome: cognome,
+      nr_telefono: nr_telefono,
+      data_nascita: data_nascita,
+      email: email,
+      password: password,
+      ruolo: ruolo,
     });
 
-    await newUser.save();
+    await newUser.save(); //la funzione save hasha la password prima di salvarla nel db
+
     res.status(200).json({ success: true, message: 'Utente registrato con successo' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -65,25 +64,16 @@ exports.loginUtente = async (req, res) => {
 
   try {
     // recupero utente dal database
-    const user = await Utente.findOne({ email });
+    const user = await Utente.findOne({ email: email });
 
     //se non esiste ritorno errore
     if (!user) {
       return res.status(404).json({ success: false, message: 'Utente inesistente' });
     }
-    console.log('Provided Password:', password);
-
 
     //controllo la password
-    const passwordCorrect = await bcrypt.compare(password, user.password);
-    console.log('Hashed Password in Database:',password);
-    console.log('Hashed Password in Database:', user.password);
-    console.log('Password Comparison Result:', passwordCorrect);
-
-    console.log("Provided Password Type:", typeof password);
-    console.log("Hashed Password Type:", typeof user.password);
-
-
+    const passwordCorrect = await user.checkPassword(password);
+    
     if (!passwordCorrect) {
       return res.status(401).json({ success: false, message: 'Password incorretta' });
     }

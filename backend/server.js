@@ -11,13 +11,13 @@ const db = require('./models')
 db_connection.connect()
 
 const authRoute = require('./routes/autenticazione')
+const patenteRoute = require('./routes/patenti')
 
 // middleware utili
 app.use(express.json())
 app.use(cors())
 
 app.use(async(req, res, next)=>{
-  //await db_connection.connect(); 
   res.header("Access-Control-Allow-Origin", "*");
   req.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -25,8 +25,8 @@ app.use(async(req, res, next)=>{
 });
 
 // gestione delle routes
-//app.use(`/api/${config.API_VERSION}/auth`, authRouter)
-app.use("/auth", authRoute);
+app.use(`/api/${config.API_VERSION}/auth`, authRoute);
+app.use(`/api/${config.API_VERSION}/patenti`, patenteRoute);
 
 
 app.use('/*', (req, res) => res.status(404).json({ success: false, message: 'Route inesistente' }))

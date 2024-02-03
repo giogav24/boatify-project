@@ -7,18 +7,19 @@ const schemaPatente = new mongoose.Schema({
     },
     noleggiatore: {
         type: Schema.Types.ObjectId,
-        ref: 'user',
+        ref: 'Utente',
         validate: {
             validator: async function (userId) {
-                const user = await mongoose.model('user').findById(userId);
-                return user.ruolo === 'noleggiatore';
+                const user = await mongoose.model('Utente').findById(userId);
+                return user.ruolo === 'Noleggiatore';
             },
             message: 'Utente deve avere il ruolo di noleggiatore'
         }
     },
     numero_patente: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     data_emissione: {
         type: String,
@@ -34,5 +35,20 @@ const schemaPatente = new mongoose.Schema({
     }
 
 })
+
+schemaPatente.pre('save', async function (next) {
+    const quattordiciGiorniDopo = new Date();
+    quattordiciGiorniDopo.setDate(quattordiciGiorniDopo.getDate() + 14);
+  
+    const dataScadenza = new Date(this.data_scadenza);
+  
+    if (dataScadenza < quattordiciGiorniDopo) {
+      // Se la data di scadenza non è valida ovvero deve essere almeno dopo 14 giorni dalla data di registrazione, interrompi il salvataggio
+      const error = new Error('Data di scadenza non valida. La patente deve essere valida per almeno 14 giorni.');
+      return next(error);
+    }
+    next();
+  });
+  
 
 module.exports= mongoose.model('Patente',schemaPatente);
