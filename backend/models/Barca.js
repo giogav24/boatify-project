@@ -26,8 +26,7 @@ const schemaBarca = new mongoose.Schema({
     },
     patente: {
         type: String,
-        //enum : ['A motore', 'A motore e vela', 'B motore', 'B motore e vela', 'C motore', 'C motore e vela']
-        ref: 'Patente'
+        enum : ['A motore', 'A motore e vela', 'B motore', 'B motore e vela', 'C motore', 'C motore e vela']
     },
     posizione:{
         type: String,

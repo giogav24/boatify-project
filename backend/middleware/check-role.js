@@ -44,4 +44,31 @@ exports.checkPermessiProprietarioBarca = async (req, res, next) => {
       res.status(500).json({ success: false, message: err.message });
     }
   };
+
+
+// Middleware per verificare se l'utente è un noleggiatore e il creatore della prenotazione
+exports.checkPermessiNoleggiatore = async (req, res, next) => {
+  try {
+    const { email, idPrenotazione } = req.body;
+
+    // Trova l'utente associato alla mail fornita
+    const utente = await Utente.findOne({ email });
+
+    if (!utente || utente.ruolo !== 'Noleggiatore') {
+      return res.status(403).json({ success: false, message: 'Utente non autorizzato' });
+    }
+
+    // Trova la prenotazione da eliminare
+    const prenotazione = await Prenotazione.findById(idPrenotazione);
+
+    if (!prenotazione || prenotazione.utente.toString() !== utente._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Utente non autorizzato' });
+    }
+
+    // Se tutte le verifiche passano, passa al middleware successivo
+    next();
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
   

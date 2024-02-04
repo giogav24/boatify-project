@@ -17,6 +17,9 @@ const schemaPrenotazione = new mongoose.Schema({
     utente:{
         type: mongoose.Types.ObjectId,
         ref: 'Utente'
+    },
+    posizione:{
+        type: String
     }
 })
 
