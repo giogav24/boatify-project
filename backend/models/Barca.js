@@ -1,21 +1,23 @@
 //Modelli Mongoose per MongoDB. Modello barca.
+
 var mongoose = require('mongoose');
 
 const schemaBarca = new mongoose.Schema({
     proprietario: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Types.ObjectId,
         ref: 'Utente',
         validate: {
             validator: async function (userId) {
-                const user = await mongoose.model('user').findById(userId);
-                return user.ruolo === 'proprietario';
+                const user = await mongoose.model('Utente').findById(userId);
+                return user.ruolo === 'Proprietario';
             },
             message: 'Utente deve avere il ruolo di proprietario'
         }
     },
     targa: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     tipo_barca: {
         type: String,
@@ -27,20 +29,24 @@ const schemaBarca = new mongoose.Schema({
         //enum : ['A motore', 'A motore e vela', 'B motore', 'B motore e vela', 'C motore', 'C motore e vela']
         ref: 'Patente'
     },
+    posizione:{
+        type: String,
+        required: true
+    },
     verificaDisponibile: {
         type: Boolean,
         default: false
     },
     prezzo_ora: {
-        type: double,
+        type: Number,
         required: true
     },
     prezzo_giorno: {
-        type: double,
+        type: Number,
         required: true
     },
     prenotazioni: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Types.ObjectId,
         ref: 'Prenotazione' 
     }
 

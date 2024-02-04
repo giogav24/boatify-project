@@ -6,12 +6,12 @@ const schemaPrenotazione = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref : 'Barca'
     },
-    data:{
-        type: String,
+    data_inizio:{
+        type: Date,
         required: true
     },
-    orario:{
-        type: String,
+    data_fine:{
+        type: Date,
         required: true
     },
     utente:{

@@ -195,6 +195,7 @@ exports.getDatiUtente = async (req, res) => {
       nome: user.nome,
       cognome: user.cognome,
       email: user.email,
+      ruolo: user.ruolo,
       numero_di_telefono: user.nr_telefono
     };
     const patenti = await Patente.find({ noleggiatore: user._id });

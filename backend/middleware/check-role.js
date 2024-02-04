@@ -1,35 +1,47 @@
 const Barca = require('../models/Barca')
-
-// controllare se l'utente che sta facendo l'operazione è il proprietario del locale
-exports.checkPermessiProprietarioBarca = async (req, res, next) => {
-    const userData = req.userData
-
-    try {
-        const BarcaOrganizzatore = await Barca.findById(userData.barca)
-
-        if (! BarcaOrganizzatore)
-            return res.status(404).json({ success: false, message: 'Barca inesistente' })
-
-        // controllo se la barca espressa nella route è quella del Proprietario che sta facendo la richiesta
-        if (req.params.barcaID !== userData.barca)
-        return res.status(403).json({ success: false, message: 'Permessi mancanti per accedere alla risorsa' })
-
-        // controllo incrociato dalla parte della barca con il suo campo proprietario
-        if (String(BarcaOrganizzatore.proprietario) !== userData.id)
-            return res.status(403).json({ success: false, message: 'Permessi mancanti per effettuare questa operazione' })
-
-        next()
-
-    } catch (err) {
-        res.status(500).json({ success: false, error: err.message })
-    }
-},
-
+const Utente = require('../models/Utente')
 
 // verificare se un utente è proprietario
 exports.checkPermessiProprietario = async (req, res, next) => {
-    if (req.userData.ruolo === 'Proprietario')
-        next()
-    else
-        return res.status(401).json({ success: false, message: 'Non autorizzato ad accedere a questa risorsa' })
-}
+    try {
+      const utente = req.body; 
+      if (utente && utente.ruolo === 'Proprietario') {
+        next();
+      } else {
+        res.status(403).json({ success: false, message: 'Utente non autorizzato' });
+      }
+    } catch (err) {
+      res.status(500).json({ success: false, message: err.message });
+    }
+  };
+
+// controllare se l'utente che sta facendo l'operazione è il proprietario della barca
+exports.checkPermessiProprietarioBarca = async (req, res, next) => {
+    try {
+      const { email, targa } = req.body;
+  
+      // Trova l'utente associato alla mail fornita
+      const utente = await Utente.findOne({ email });
+  
+      if (!utente) {
+        return res.status(404).json({ success: false, message: 'Utente non trovato' });
+      }
+  
+      // Trova la barca utilizzando il numero della targa e l'ID dell'utente
+      const barcaDaVerificare = await Barca.findOne({
+        proprietario: utente._id,
+        targa: targa,
+      });
+  
+      if (!barcaDaVerificare) {
+        return res.status(404).json({ success: false, message: "Barca non trovata per l'utente specificato" });
+      }
+  
+      // Se l'utente ha i permessi, passa al prossimo middleware o alla funzione del controller
+      req.barcaDaVerificare = barcaDaVerificare;
+      next();
+    } catch (err) {
+      res.status(500).json({ success: false, message: err.message });
+    }
+  };
+  

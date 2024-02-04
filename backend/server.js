@@ -11,6 +11,7 @@ db_connection.connect()
 
 const authRoute = require('./routes/autenticazione')
 const patenteRoute = require('./routes/patenti')
+const barcaRoute = require('./routes/barca')
 
 // middleware utili
 app.use(express.json())
@@ -26,6 +27,7 @@ app.use((req, res, next)=>{
 // gestione delle routes
 app.use(`/api/${config.API_VERSION}/auth`, authRoute)
 app.use(`/api/${config.API_VERSION}/patenti`, patenteRoute)
+app.use(`/api/${config.API_VERSION}/barca`, barcaRoute)
 
 
 app.use('/*', (req, res) => res.status(404).json({ success: false, message: 'Route inesistente' }))
