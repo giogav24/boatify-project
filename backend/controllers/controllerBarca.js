@@ -117,19 +117,25 @@ exports.verificaBarcheDisponibili = async (req, res) => {
         // Trova tutte le barche che soddisfano i criteri
         const barcheDisponibili = await Barca.find({
             posizione: luogo,
-            prenotazioni: {
-                $not: {
-                    $elemMatch: {
-                        data_inizio: { $lt: new Date(data.fine) },
-                        data_fine: { $gt: new Date(data.inizio) }
+            $or: [
+                {
+                    prenotazioni: {
+                        $elemMatch: {
+                            data_inizio: { $gte: new Date(data.fine) },
+                            data_fine: { $lte: new Date(data.inizio) }
+                        }
                     }
+                },
+                {
+                    codiceNoleggio: null
                 }
-            }
+            ]
         }, {
-            //Escludo i campi _id della barca e del proprietario e le prenotazioni
-            _id: 0,  
-            'proprietario': 0,  
-            'prenotazioni': 0  
+            // Escludo i campi _id della barca e del proprietario e le prenotazioni
+            _id: 0,
+            'proprietario': 0,
+            'prenotazioni': 0,
+            'codiceNoleggio' : 0
         });
 
         res.status(200).json({ success: true, barcheDisponibili });
