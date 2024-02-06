@@ -289,6 +289,10 @@ exports.avviaNoleggio = async (req, res) => {
         if (!utente) {
             return res.status(404).json({ success: false, message: 'Utente non registrato.' });
         }
+        // Verifica se l'utente ha già un noleggio attivo
+        if (utente.codiceNoleggio && utente.codiceNoleggio.codice) {
+            return res.status(400).json({ success: false, message: 'L\'utente ha già un noleggio attivo.' });
+        }
 
         // Verifica se la barca è disponibile alla data e ora correnti
         const dataOraAttuali = new Date();
