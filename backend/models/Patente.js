@@ -22,11 +22,11 @@ const schemaPatente = new mongoose.Schema({
         unique: true
     },
     data_emissione: {
-        type: String,
+        type: Date,
         required: true
     },
     data_scadenza: {
-        type: String,
+        type: Date,
         required: true
     }
 })
