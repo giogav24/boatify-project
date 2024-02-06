@@ -68,34 +68,77 @@ exports.eliminaBarca = async (req, res) => {
     }   
   };
 
-exports.getDatiBarca = async (req, res) => {
+  exports.getDatiBarca = async (req, res) => {
     try {
-      const { targa } = req.body; 
+      const { email, targa } = req.body; 
   
       // Trova la barca con il numero di targa specificato
-      const barca = await Barca.findOne({ targa });
+      const barca = await Barca.findOne({ targa }).populate({
+        path: 'prenotazioni',
+        populate: {
+          path: 'utente',
+          select: 'nome cognome email nr_telefono'
+        }
+      }).populate('proprietario', 'email');
   
       if (!barca) {
         return res.status(404).json({ success: false, message: 'Barca non trovata' });
       }
   
       const datiBarca = {
-        proprietario: barca.proprietario,
+        proprietario: barca.proprietario.email,
         targa: barca.targa,
         tipo_barca: barca.tipo_barca,
         prezzo_ora: barca.prezzo_ora,
         prezzo_giorno: barca.prezzo_giorno,
         posizione: barca.posizione,
+        prenotazioni: barca.prenotazioni.map(prenotazione => ({
+          data_inizio: prenotazione.data_inizio,
+          data_fine: prenotazione.data_fine,
+          utente: {
+            nome: prenotazione.utente.nome,
+            cognome: prenotazione.utente.cognome,
+            email: prenotazione.utente.email,
+            nr_telefono: prenotazione.utente.nr_telefono,
+          }
+        }))
       };
-      const prenotazioni = await Prenotazione.find({ barca: barca._id });
-
-      datiBarca.prenotazioni = prenotazioni;
 
       res.status(200).json({ success: true, datiBarca });
     } catch (err) {
       res.status(500).json({ success: false, message: err.message });
     }
-  };
+};
+
+exports.verificaBarcheDisponibili = async (req, res) => {
+    try {
+        const { data, luogo } = req.body;
+
+        // Trova tutte le barche che soddisfano i criteri
+        const barcheDisponibili = await Barca.find({
+            posizione: luogo,
+            prenotazioni: {
+                $not: {
+                    $elemMatch: {
+                        data_inizio: { $lt: new Date(data.fine) },
+                        data_fine: { $gt: new Date(data.inizio) }
+                    }
+                }
+            }
+        }, {
+            //Escludo i campi _id della barca e del proprietario e le prenotazioni
+            _id: 0,  
+            'proprietario': 0,  
+            'prenotazioni': 0  
+        });
+
+        res.status(200).json({ success: true, barcheDisponibili });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+
 
 exports.creaPrenotazione = async (req, res) => {
   try {
@@ -231,4 +274,99 @@ exports.eliminaPrenotazione = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+exports.avviaNoleggio = async (req, res) => {
+    try {
+        const { email, targa } = req.body;
+
+        const utente = await Utente.findOne({ email: email });
+        if (!utente) {
+            return res.status(404).json({ success: false, message: 'Utente non registrato.' });
+        }
+
+        // Verifica se la barca è disponibile alla data e ora correnti
+        const dataOraAttuali = new Date();
+        const barca = await Barca.findOne({
+            targa,
+            prenotazioni: {
+                $not: {
+                    $elemMatch: {
+                        data_inizio: { $lt: dataOraAttuali },
+                        data_fine: { $gt: dataOraAttuali }
+                    }
+                }
+            }
+        });
+
+        if (!barca) {
+            return res.status(404).json({ success: false, message: 'La barca non è disponibile al momento.' });
+        }
+
+        // Genera un codice a 6 cifre
+        const codice = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Imposta il timestamp di scadenza a 10 minuti dal momento attuale
+        const scadenza = new Date();
+        scadenza.setDate(scadenza.getDate() + 1);
+
+        // Memorizza il codice e il timestamp di scadenza nella barca e nell'utente
+        barca.codiceNoleggio = {
+            codice,
+            scadenza
+        };
+        utente.codiceNoleggio = {
+            codice,
+            scadenza
+        }
+
+        // Salva la barca nel database
+        await barca.save();
+        await utente.save();
+
+        res.status(200).json({ success: true, codice });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Errore durante l\'avvio del noleggio.' });
+    }
+};
+
+exports.terminaNoleggio = async (req, res) => {
+    try {
+        const { email, targa, codiceNoleggio } = req.body;
+
+        const utente = await Utente.findOne({ email });
+        if (!utente) {
+            return res.status(404).json({ success: false, message: 'Utente non registrato.' });
+        }
+
+        // Verifica se l'utente è lo stesso che ha avviato il noleggio
+        if (utente.codiceNoleggio && utente.codiceNoleggio.codice === codiceNoleggio) {
+            // Verifica se la barca è registrata e se il codiceNoleggio corrisponde
+            const barca = await Barca.findOne({
+                targa,
+                'codiceNoleggio.codice': codiceNoleggio
+            });
+
+            if (!barca || !barca.codiceNoleggio || barca.codiceNoleggio.scadenza < new Date()) {
+                return res.status(404).json({ success: false, message: 'Il noleggio non è valido o la barca non è registrata.' });
+            }
+
+            // Termina il noleggio 
+            barca.codiceNoleggio = null;
+            utente.codiceNoleggio = null;
+
+            // Salva le modifiche nella barca e nell'utente
+            await Promise.all([barca.save(), utente.save()]);
+
+            res.status(200).json({ success: true, message: 'Noleggio terminato correttamente.' });
+        } else {
+            res.status(403).json({ success: false, message: 'Accesso non autorizzato o codice errato' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Errore durante la terminazione del noleggio.' });
+    }
+};
+
+
 

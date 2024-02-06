@@ -49,6 +49,10 @@ const schemaUtente = new mongoose.Schema({
         type: [mongoose.Types.ObjectId],
         ref: 'Prenotazione'
     },
+    codiceNoleggio: {
+        codice: String,
+        scadenza: Date
+    },
     verifiedEmail: {
         type: Boolean,
         default: false
@@ -56,7 +60,6 @@ const schemaUtente = new mongoose.Schema({
     verifiedTelefono: {
         type: Boolean,
         default: false
-
     }
 })
 // funzione che automaticamente, prima di salvare un (nuovo) utente, hasha la password prima di salvarla nel database

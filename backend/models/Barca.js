@@ -32,10 +32,6 @@ const schemaBarca = new mongoose.Schema({
         type: String,
         required: true
     },
-    verificaDisponibile: {
-        type: Boolean,
-        default: false
-    },
     prezzo_ora: {
         type: Number,
         required: true
@@ -44,9 +40,13 @@ const schemaBarca = new mongoose.Schema({
         type: Number,
         required: true
     },
-    prenotazioni: {
+    prenotazioni: [{
         type: mongoose.Types.ObjectId,
         ref: 'Prenotazione' 
+    }],
+    codiceNoleggio: {
+        codice: String,
+        scadenza: Date
     }
 
 })

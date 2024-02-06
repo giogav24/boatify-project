@@ -71,4 +71,47 @@ exports.checkPermessiNoleggiatore = async (req, res, next) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+exports.avviaNoleggio = async (req, res) => {
+    try {
+        const { email, targa } = req.body;
+
+        const utente = await Utente.findOne({ email });
+        if (!utente) {
+            return res.status(404).json({ success: false, message: 'Utente non registrato.' });
+        }
+
+        // Verifica se la barca è disponibile alla data e ora correnti
+        const dataOraAttuali = new Date();
+        const barca = await Barca.findOne({
+            targa,
+            verificaDisponibile: true,
+            prenotazioni: {
+                $not: {
+                    $elemMatch: {
+                        data_inizio: { $lt: dataOraAttuali },
+                        data_fine: { $gt: dataOraAttuali }
+                    }
+                }
+            }
+        });
+
+        if (!barca) {
+            return res.status(404).json({ success: false, message: 'La barca non è disponibile al momento.' });
+        }
+
+        // Genera un codice a 6 cifre
+        const codice = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Memorizza il codice e il timestamp di scadenza nell'utente o nella barca o in un'altra collezione a seconda delle tue esigenze
+
+        // Invia il codice al cliente (o esegui altre operazioni necessarie)
+
+        res.status(200).json({ success: true, codice });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Errore durante l\'avvio del noleggio.' });
+    }
+};
+
   
