@@ -11,7 +11,7 @@ const schemaUtente = new mongoose.Schema({
     },
     nome: {
         type: String,
-        //required: true
+        required: true
     },
     cognome: {
         type: String,

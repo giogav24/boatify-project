@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "test": "export NODE_ENV=testing; jest",
+    "test": "jest --runInBand --detectOpenHandles --forceExit",
     "test:watch": "export NODE_ENV=testing; jest --watch",
     "test:ci": "jest --ci --reporters=default --watchAll=false --forceExit",
     "test-giusti": "jest"
@@ -21,7 +21,7 @@
     "casual": "^1.6.2",
     "jest": "^28.1.0",
     "nodemon": "^2.0.16",
-    "supertest": "^6.2.3",
+    "supertest": "^6.3.4",
     "swagger-jsdoc": "^6.2.1"
   },
   "dependencies": {
