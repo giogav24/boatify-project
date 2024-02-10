@@ -111,7 +111,7 @@ exports.resetPassword = async (req, res) => {
     const user = await Utente.findOne({ email: email });
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "Impossibile trovare l'email" });
+      return res.status(404).json({ success: false, message: "Impossibile trovare l'utente" });
     }
 
     const resetToken = crypto.randomBytes(20).toString('hex');
@@ -152,14 +152,14 @@ exports.cambiaPassword = async (req, res) => {
   const { email, oldPassword, newPassword } = req.body;
 
   if (!email || !oldPassword || !newPassword) {
-    res.status(400).json({ success: false, message: 'Campi vuoti forniti nella richiesta' });
+    res.status(400).json({ success: false, message: 'Compilare tutti i campi' });
   }
 
   try {
     const user = await Utente.findOne({ email });
 
     if (!user) {
-      res.status(404).json({ success: false, message: 'Utente non trovato' });
+      res.status(400).json({ success: false, message: 'Utente non trovato' });
     }
 
     //controllo che la vecchia password inserita sia uguale a quella registrata nel db
@@ -169,9 +169,6 @@ exports.cambiaPassword = async (req, res) => {
       return res.status(401).json({ success: false, message: 'La vecchia password fornita è errata' });
     }
 
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-
-    user.password = hashedNewPassword;
     await user.save();
 
     res.status(200).json({ success: true, message: 'Password cambiata con successo' });
