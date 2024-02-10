@@ -49,7 +49,14 @@ exports.getPatentiUtente = async (req, res) => {
       return res.status(404).json({ success: false, message: "L'utente non ha patenti registrate" });
     }
 
-    res.status(200).json({ success: true, patenti });
+    const responsePatenti = patenti.map(patente => ({
+      numero_patente: patente.numero_patente,
+      tipo_patente: patente.tipo_patente,
+      data_emissione: patente.data_emissione,
+      data_scadenza: patente.data_scadenza,
+    }));
+
+    res.status(200).json({ success: true, responsePatenti });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
