@@ -21,8 +21,10 @@ exports.aggiungiBarca = async (req, res) => {
             prezzo_ora: prezzo_ora,
             prezzo_giorno: prezzo_giorno,
         });
-  
-      await nuovaBarca.save();
+        utente.barca = nuovaBarca;
+
+        await nuovaBarca.save();
+        await utente.save();
   
       res.status(200).json({ success: true, message: 'Barca aggiunta con successo' });
     } else {
@@ -68,25 +70,27 @@ exports.eliminaBarca = async (req, res) => {
     }   
   };
 
-  exports.getDatiBarca = async (req, res) => {
+exports.getDatiBarca = async (req, res) => {
     try {
       const { email, targa } = req.body; 
   
       // Trova la barca con il numero di targa specificato
-      const barca = await Barca.findOne({ targa }).populate({
+      const barca = await Barca.findOne({ targa: targa }).populate({
         path: 'prenotazioni',
         populate: {
           path: 'utente',
           select: 'nome cognome email nr_telefono'
         }
-      }).populate('proprietario', 'email');
+      })
+      .populate('proprietario', 'email');
   
       if (!barca) {
         return res.status(404).json({ success: false, message: 'Barca non trovata' });
       }
+
+      console.log('Prenotazioni:', barca.prenotazioni);
   
       const datiBarca = {
-        proprietario: barca.proprietario.email,
         targa: barca.targa,
         tipo_barca: barca.tipo_barca,
         prezzo_ora: barca.prezzo_ora,
@@ -101,9 +105,10 @@ exports.eliminaBarca = async (req, res) => {
             email: prenotazione.utente.email,
             nr_telefono: prenotazione.utente.nr_telefono,
           }
-        }))
+        })),
       };
-
+      
+      
       res.status(200).json({ success: true, datiBarca });
     } catch (err) {
       res.status(500).json({ success: false, message: err.message });
@@ -143,8 +148,6 @@ exports.verificaBarcheDisponibili = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
-
-
 
 exports.creaPrenotazione = async (req, res) => {
   try {
@@ -224,15 +227,26 @@ exports.getDatiPrenotazione = async (req, res) => {
     }
 
     // Trova le prenotazioni associate all'utente
-    const prenotazioni = await Prenotazione.find({ utente: utente._id }).populate('barca', 'targa tipo_barca proprietario prezzo_ora prezzo_giorno');
+    const prenotazioni = await Prenotazione.find({ utente: utente._id }).populate({
+      path: 'barca',
+      populate: {
+        path: 'proprietario',
+        select: 'nome cognome email',
+      },
+      select: 'targa tipo_barca prezzo_ora prezzo_giorno',
+    });
+    
 
     // Estrai i dati richiesti
     const datiPrenotazioni = prenotazioni.map(prenotazione => ({
-      id: prenotazione._id,
       barca: {
         targa: prenotazione.barca.targa,
         tipo_barca: prenotazione.barca.tipo_barca,
-        proprietario: prenotazione.barca.proprietario,
+        proprietario: {
+          nome: prenotazione.barca.proprietario.nome,
+          cognome: prenotazione.barca.proprietario.cognome,
+          email: prenotazione.barca.proprietario.email,
+        },
         prezzo_ora: prenotazione.barca.prezzo_ora,
         prezzo_giorno: prenotazione.barca.prezzo_giorno,
       },
@@ -246,7 +260,6 @@ exports.getDatiPrenotazione = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
 
 exports.eliminaPrenotazione = async (req, res) => {
   try {
