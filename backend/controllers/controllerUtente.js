@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const config = require('../config');
-const localStorage = require('localStorage'); 
+//const localStorage = require('localStorage'); 
 const sendConfirmationEmail = require('./email');
 
 exports.registraUtente = async (req, res) => {
