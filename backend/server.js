@@ -5,6 +5,7 @@ require("dotenv").config();
 
 const app = express()
 
+
 // chiamata alla funzione per la connessione con il database
 const db_connection = require('./dbconnection')
 
@@ -14,7 +15,15 @@ const barcaRoute = require('./routes/barca')
 
 // middleware utili
 app.use(express.json())
+// Enable CORS for all routes
 app.use(cors())
+
+app.use((req, res, next) => {
+  if (req.method === 'POST' && req.path === '/api/registraUtente') {
+    console.log('Richiesta POST a /api/registraUtente:', req.body);
+  }
+  next();
+});
 
 app.use((req, res, next)=>{
   res.header("Access-Control-Allow-Origin", "*");
