@@ -6,10 +6,7 @@ module.exports = defineConfig({
 
 module.exports = {
   devServer: {
-    allowedHosts: [
-      'localhost',
-      'boatifyappfrontend.onrender.com',
-    ],
+    disableHostCheck: true,
   },
 };
 
