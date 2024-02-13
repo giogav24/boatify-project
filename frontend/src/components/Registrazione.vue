@@ -1,9 +1,12 @@
 <template>
-  <div class="text-center mb-8">
-    <h1 class="text-4xl font-bold text-white">BOATIFY</h1>
-    <img src="../assets/logo.png" alt="Logo BOATIFY" class="mt-4" />
-  </div>
-  <form @submit.prevent="registerUser">
+  <form class="container" @submit.prevent="registerUser">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-white">BOATIFY</h1>
+      <img src="../assets/logo.png" alt="Logo BOATIFY" class="mt-4" />
+    </div>
+    <div v-if="error.status" class="alert alert-danger m-4" role="alert">
+      <h1 v-text="error.message"></h1>
+    </div>
     <div class="mb-3">
       <label for="nome" class="form-label">Nome</label>
       <input v-model="user.nome" type="text" class="form-control" id="nome" />
@@ -20,15 +23,21 @@
     <div class="mb-3">
       <label for="prefisso" class="form-label">Prefisso</label>
       <select v-model="user.prefisso" class="form-select" id="prefisso">
-        <!-- Opzioni del prefisso (es. +39 per l'Italia) -->
+        <option value="+39">Italia (+39)</option>
+        <option value="+33">Francia (+33)</option>
+        <option value="+49">Germania (+49)</option>
+        <option value="+44">Regno Unito (+44)</option>
+        <option value="+34">Spagna (+34)</option>
+        <option value="+31">Paesi Bassi (+31)</option>
+        <option value="+41">Svizzera (+41)</option>
       </select>
     </div>
     <div class="mb-3">
       <label for="nr_telefono" class="form-label">Numero di telefono</label>
       <div class="input-group">
-        <span class="input-group-text" id="prefisso-addon"
-          >+{{ user.prefisso }}</span
-        >
+        <span class="input-group-text" id="prefisso-addon">{{
+          user.prefisso
+        }}</span>
         <input
           v-model="user.nr_telefono"
           type="text"
@@ -72,7 +81,7 @@
       >
       <input
         v-model="user.conferma_password"
-        type="conferma_password"
+        type="password"
         class="form-control"
         id="conferma_password"
       />
@@ -84,12 +93,11 @@
         <option value="Noleggiatore">Noleggiatore</option>
       </select>
     </div>
-    <button type="submit" class="btn btn-primary">Registrati</button>
+    <button class="btn btn-primary" @click="registrazione">Registrati</button>
   </form>
 </template>
 
 <script>
-import { config } from "@/config";
 import router from "@/router";
 import { defineComponent } from "vue";
 
@@ -114,7 +122,8 @@ export default defineComponent({
     };
   },
   methods: {
-    async registrazione() {
+    async registrazione(event) {
+      event.preventDefault();
       if (this.user.password !== this.user.conferma_password) {
         this.error.status = true;
         this.error.message = "Le password inserite non coincidono!";
@@ -129,7 +138,7 @@ export default defineComponent({
 
       try {
         const res = await fetch(
-          `/api/${config.API_VERSION}/auth/registraUtente`,
+          `${process.env.VUE_APP_SERVER_API_URL}/api/${process.env.VUE_APP_API_VERSION}/auth/registraUtente`,
           opzioniRichiesta
         );
         const data = await res.json();

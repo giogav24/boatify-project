@@ -57,21 +57,23 @@ exports.registraUtente = async (req, res) => {
 
 exports.loginUtente = async (req, res) => {
   const { email, password } = req.body;
-
-// controllo su campi mancanti
+  
+  // controllo su campi mancanti
   if (!email || !password) {
     return res.status(400).json({ success: false, message: 'Compilare tutti i campi' });
   }
-
+  
+  console.log(req.body);
+  
   try {
     // recupero utente dal database
     const user = await Utente.findOne({ email: email });
-
+    
     //se non esiste ritorno errore
     if (!user) {
       return res.status(404).json({ success: false, message: 'Utente inesistente' });
     }
-
+    
     //controllo la password
     const passwordCorrect = await user.checkPassword(password);
     
@@ -92,7 +94,7 @@ exports.loginUtente = async (req, res) => {
       }
     );
 
-    res.status(200).json({success: true,token: token});
+    res.status(200).json({ success: true, token: token, email: user.email, user: user.nome });
 
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

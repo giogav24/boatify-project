@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { auth } from "./middle.js";
 import RegistrazioneView from "../views/RegistrazioneView.vue";
 import LoginView from "../views/LoginView.vue";
+import Dashboard from "../views/DashboardView.vue";
 
 const routes = [
   {
@@ -12,9 +14,13 @@ const routes = [
     path: "/login",
     name: "LoginForm",
     component: LoginView,
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
+  },
+  {
+    path: "/dashboard",
+    name: "Dashboard",
+    component: Dashboard,
+    beforeEnter: [auth],
+    // middleware => login se non autenticato
   },
 ];
 
