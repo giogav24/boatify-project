@@ -40,7 +40,7 @@
 //import { config } from "@/config";
 import { defineComponent } from "vue";
 import store from "@/store/index";
-//import router from "@/router";
+import router from "@/router";
 
 export default defineComponent({
   name: "LoginForm",
@@ -77,11 +77,18 @@ export default defineComponent({
         if (data.success) {
           //console.log('user logged in ' + data.nome)
           store.commit("setToken", {
-            user: data.nome,
+            nome: data.nome,
+            cognome: data.cognome,
             email: data.email,
+            nr_telefono: data.nr_telefono,
+            ruolo: data.ruolo,
             token: data.token,
           });
-          //router.push({ name: "Dashboard" });
+          try {
+            router.push({ name: "Dashboard" });
+          } catch (error) {
+            console.log(error);
+          }
         } else {
           //console.log("something went wrong")
           this.error.status = true;

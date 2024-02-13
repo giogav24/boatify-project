@@ -63,8 +63,6 @@ exports.loginUtente = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Compilare tutti i campi' });
   }
   
-  console.log(req.body);
-  
   try {
     // recupero utente dal database
     const user = await Utente.findOne({ email: email });
