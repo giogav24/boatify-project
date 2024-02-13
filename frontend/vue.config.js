@@ -4,9 +4,6 @@ module.exports = defineConfig({
   transpileDependencies: true,
   chainWebpack: (config) => {
     config.devServer
-      .allowedHosts([
-        'localhost',
-        'boatifyappfrontend.onrender.com',
-      ]);
+      .allowedHosts['localhost','boatifyappfrontend.onrender.com'];
   },
 });
