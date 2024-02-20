@@ -92,7 +92,7 @@ exports.loginUtente = async (req, res) => {
       }
     );
 
-    res.status(200).json({ success: true, token: token, email: user.email, user: user.nome });
+    res.status(200).json({ success: true, token: token });
 
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
